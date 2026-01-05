@@ -2,8 +2,8 @@ from NMPC import NMPC
 import casadi as ca
 import numpy as np
 import matplotlib.pyplot as plt
-from plotter import *
-
+from demos.plotter import *
+from demos.video_plot import *
 def get_p(q):
     q = np.array(q).squeeze()
     x,l,theta,_,_,_ = q
@@ -15,7 +15,7 @@ def main():
     N = 30
     Ts = 0.1
     
-    Q = ca.diagcat(200,400,200,200,200,200)
+    Q = ca.diagcat(200,600,200,200,200,200)
     R = ca.diagcat(1,1)
     
     MPC = NMPC(nx,nu,N,Ts,Q,R)
@@ -78,8 +78,8 @@ def main():
     RHS = ca.vertcat(qdot,qddot)
     
     
-    state0 = np.array([0,0.5,0,0,0,0])
-    stateRef = np.array([2,0.5,0,0,0,0])
+    state0 = np.array([-2,0.6,0,0,0,0])
+    stateRef = np.array([2,0.6,0,0,0,0])
     
     MPC.stZeroRef(state0,stateRef)
     MPC.createModel(states, controls, RHS)
@@ -117,7 +117,7 @@ def main():
     F,ul = U[:,0], U[:,1]
     xc = X[:,0]
     #plot2D(xc,xl,zl,Ts)
-    plot2D_to_video(xc,xl,zl,Ts,"controlled_dampening.mp4")
+    plotOscillations(X[:,2],np.linspace(0,10,101),"MPC", True, "oscillations_mpc.png")
     """
     fig, ax = plt.subplots()
     ax.plot(x,y, '-o',color='r', label='closed-loop path')
@@ -127,19 +127,7 @@ def main():
     ax.set_xlabel("x [m]"); plt.ylabel("y [m]")
     plt.show()
     """
-    fig, ax = plt.subplots(2, 1, sharex=True)
-
-    ax[0].step(t_history, F, where="post")
-    ax[0].grid(True)
-    ax[0].set_ylabel("F [N]")
-    ax[0].set_title("Control inputs (stairs)")
-
-    ax[1].step(t_history, ul, where="post")
-    ax[1].grid(True)
-    ax[1].set_ylabel("ul")
-    ax[1].set_xlabel("time [s]")
-
-    plt.show()
+    plotControls(t_history,F,ul)
 
 
 if __name__ == "__main__":
